@@ -1,16 +1,30 @@
 import React, { Component } from 'react';
 
+const API_ADDRESS = 'https://spotify-api-wrapper.appspot.com'
+
 class App extends Component{
 
-    state = { artistQuery: '' };
+    state = { artistQuery: '', artist: null, tracks: [] };
 
     updateArtistQuery = event => {
-        console.log('event.target.value => ', event.target.value);
         this.setState({ artistQuery: event.target.value });
     }
 
     searchArtist =() => {
-        console.log('this.state => ', this.state)
+        fetch(`${API_ADDRESS}/artist/${this.state.artistQuery}`)
+        .then(res => res.json())
+        .then(res => {
+            if(res.artists.total > 0){
+                const artist = res.artists.items[0];
+                this.setState({ artist });
+
+                fetch(`${API_ADDRESS}/artist/${artist.id}/top-tracks`)
+                .then(res => res.json())
+                .then(res => this.setState({ tracks: res.tracks }))
+                .catch(err => alert(err.message))
+            }
+        })
+        .catch(err => alert(err.message))
     }
 
     handleKeyPress = event => {
@@ -20,6 +34,7 @@ class App extends Component{
     }
 
     render(){
+        console.log('state => ', this.state)
         return(
             <div>
                 <h2>Music Master</h2>
